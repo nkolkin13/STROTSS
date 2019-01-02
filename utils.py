@@ -311,8 +311,9 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
         
         style_im = to_device(Variable(load_path_for_pytorch(p, max_side=scale, verbose=False, force_scale=True).unsqueeze(0), requires_grad=False))
         
-        r = imresize(regions[1][ri],(style_im.size(3),style_im.size(2)),interp='bilinear')
-        
+        r_temp = regions[1][ri]
+        r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()
+        r = F.upsample(r_temp,(style_im.size(2),style_im.size(3)),mode='bilinear')[0,0,:,:].numpy()        
         sts = [style_im]
 
         z_ims.append(style_im)
