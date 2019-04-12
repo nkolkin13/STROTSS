@@ -10,6 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from imageio import imread
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw 
 
 use_gpu = True
 
@@ -25,6 +28,41 @@ def match_device(ref, mut):
 
 #Define YUV color transform
 C = torch.from_numpy(np.float32([[0.577350,0.577350,0.577350],[-0.577350,0.788675,-0.211325],[-0.577350,-0.211325,0.788675]]))
+
+wip_img = torch.from_numpy(imread('./flaskr/static/output_ims/wip.png').astype(np.float32)).permute(2,0,1).unsqueeze(0)
+wip_img = F.upsample(wip_img,(100,100),mode='bilinear')
+def aug_canvas(canvas, scale, s_iter):
+
+    h = canvas.size(2)
+    w = canvas.size(3)
+
+    mx = max(h,w)
+
+    frac = 512./float(mx)
+
+    h = int(h*frac)
+    w = int(w*frac)
+
+    prg = 0.
+    if scale < 4:
+        prg = (scale-1)*0.21+s_iter/250.*0.21
+    else:
+        prg = 0.63+s_iter/250.*0.37
+    prg = int(prg*100.)
+
+    canvas = F.upsample(canvas,(h,w),mode='bilinear').cpu()
+
+    canvas = torch.clamp(canvas[0],-0.5,0.5).data.numpy().transpose(1,2,0)
+
+    canvas = Image.fromarray(np.uint8((canvas+0.5)*255))
+
+    draw = ImageDraw.Draw(canvas)
+    # font = ImageFont.truetype(<font-file>, <font-size>)
+    font = ImageFont.truetype("./flaskr/static/DroidSansMono.ttf", 16)
+    # draw.text((x, y),"Sample Text",(r,g,b))
+    draw.text((0, 0),"Progress: {0}%".format(prg),(0,255,0),font=font)
+
+    return np.array(canvas)
 
 def rgb_to_yuv(rgb):
 
@@ -313,7 +351,7 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
         
         r_temp = regions[1][ri]
         r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()
-        r = F.upsample(r_temp,(style_im.size(2),style_im.size(3)),mode='bilinear')[0,0,:,:].numpy()        
+        r = F.upsample(r_temp,(style_im.size(3),style_im.size(2)),mode='bilinear')[0,0,:,:].numpy()        
         sts = [style_im]
 
         z_ims.append(style_im)

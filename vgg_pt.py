@@ -7,7 +7,6 @@ from torch.autograd import Variable
 import torch
 from torchvision import models
 import numpy as np
-from scipy.misc import imresize
 
 ssl._create_default_https_context = ssl._create_unverified_context
 

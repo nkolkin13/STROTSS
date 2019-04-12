@@ -3,10 +3,9 @@ import math
 import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
-from scipy.misc import imresize
 
-from contextual_loss import *
-import utils
+from flaskr.strotss.contextual_loss import *
+import flaskr.strotss.utils
 
 
 class objective_class():
@@ -147,7 +146,7 @@ class objective_class():
             try:
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
             except:
-                region_mask = region_mask[:,:,0]
+                region_mask = region_mask[:,:]
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
 
             #np.random.shuffle(xc)
@@ -194,10 +193,10 @@ class objective_class():
             xym = np.floor(xy).astype(np.float32)
             xyr = xy - xym
 
-            w00 = utils.to_device(torch.from_numpy((1.-xxr)*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w01 = utils.to_device(torch.from_numpy((1.-xxr)*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w10 = utils.to_device(torch.from_numpy(xxr*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w11 = utils.to_device(torch.from_numpy(xxr*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w00 = flaskr.strotss.utils.to_device(torch.from_numpy((1.-xxr)*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w01 = flaskr.strotss.utils.to_device(torch.from_numpy((1.-xxr)*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w10 = flaskr.strotss.utils.to_device(torch.from_numpy(xxr*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w11 = flaskr.strotss.utils.to_device(torch.from_numpy(xxr*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
 
 
             xxm = np.clip(xxm.astype(np.int32),0,temp.size(2)-1)

@@ -9,9 +9,9 @@ import torch.optim as optim
 import numpy as np
 from imageio import imread, imwrite
 
-from st_helper import *
-import utils
-from utils import *
+from flaskr.strotss.st_helper import *
+import flaskr.strotss.utils
+from flaskr.strotss.utils import *
 
 def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidance,regions, output_path='./output.png'):
 
@@ -19,7 +19,7 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
     
     start = time.time()
 
-    content_im_big = utils.to_device(Variable(load_path_for_pytorch(content_path,512,force_scale=True).unsqueeze(0)))
+    content_im_big = flaskr.strotss.utils.to_device(Variable(load_path_for_pytorch(content_path,512,force_scale=True).unsqueeze(0)))
 
     for scl in range(1,max_scl):
 
@@ -27,8 +27,8 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
         lr = 2e-3
 
         ### Load Style and Content Image ###
-        content_im = utils.to_device(Variable(load_path_for_pytorch(content_path,long_side,force_scale=True).unsqueeze(0)))
-        content_im_mean = utils.to_device(Variable(load_path_for_pytorch(style_path,long_side,force_scale=True).unsqueeze(0))).mean(2,keepdim=True).mean(3,keepdim=True)
+        content_im = flaskr.strotss.utils.to_device(Variable(load_path_for_pytorch(content_path,long_side,force_scale=True).unsqueeze(0)))
+        content_im_mean = flaskr.strotss.utils.to_device(Variable(load_path_for_pytorch(style_path,long_side,force_scale=True).unsqueeze(0))).mean(2,keepdim=True).mean(3,keepdim=True)
         
         ### Compute bottom level of laplaccian pyramid for content image at current scale ###
         lap = content_im.clone()-F.upsample(F.upsample(content_im,(content_im.size(2)//2,content_im.size(3)//2),mode='bilinear'),(content_im.size(2),content_im.size(3)),mode='bilinear')
@@ -57,7 +57,7 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
             lr = 1e-3
 
         ### Style Transfer at this scale ###
-        stylized_im, final_loss = style_transfer(stylized_im, content_im, style_path, scl, long_side, 0., use_guidance=use_guidance, coords=coords, content_weight=content_weight, lr=lr, regions=regions)
+        stylized_im, final_loss = style_transfer(stylized_im, content_im, style_path, output_path, scl, long_side, 0., use_guidance=use_guidance, coords=coords, content_weight=content_weight, lr=lr, regions=regions)
 
         canvas = F.upsample(torch.clamp(stylized_im,-0.5,0.5),(content_im.size(2),content_im.size(3)),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
         
@@ -82,7 +82,7 @@ if __name__=='__main__':
     use_guidance = '-g' in sys.argv
     use_guidance_region = '-gr' in sys.argv
     use_gpu = not ('-cpu' in sys.argv)
-    utils.use_gpu = use_gpu
+    flaskr.strotss.utils.use_gpu = use_gpu
 
 
     paths = glob(style_path+'*')
@@ -93,10 +93,10 @@ if __name__=='__main__':
     ### Preprocess User Guidance if Required ###
     coords=0.
     if use_guidance:
-        coords = utils.build_guidance(content_path,style_path,np.load('saved_guide01.npy'))
+        coords = flaskr.strotss.utils.build_guidance(content_path,style_path,np.load('saved_guide01.npy'))
 
     if use_guidance_region:
-        regions = utils.extract_regions('./owls_g_c.jpg','./vase_g_s.jpg')
+        regions = flaskr.strotss.utils.extract_regions('./owls_g_c.jpg','./vase_g_s.jpg')
     else:
         try:
             regions = [[imread(content_path)[:,:,0]*0.+1.], [imread(style_path)[:,:,0]*0.+1.]]
