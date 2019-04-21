@@ -29,8 +29,9 @@ def match_device(ref, mut):
 #Define YUV color transform
 C = torch.from_numpy(np.float32([[0.577350,0.577350,0.577350],[-0.577350,0.788675,-0.211325],[-0.577350,-0.211325,0.788675]]))
 
-wip_img = torch.from_numpy(imread('./flaskr/static/output_ims/wip.png').astype(np.float32)).permute(2,0,1).unsqueeze(0)
-wip_img = F.upsample(wip_img,(100,100),mode='bilinear')
+#wip_img = torch.from_numpy(imread('./flaskr/static/output_ims/wip.png').astype(np.float32)).permute(2,0,1).unsqueeze(0)
+#wip_img = F.upsample(wip_img,(100,100),mode='bilinear')
+
 def aug_canvas(canvas, scale, s_iter):
 
     h = canvas.size(2)
@@ -56,11 +57,9 @@ def aug_canvas(canvas, scale, s_iter):
 
     canvas = Image.fromarray(np.uint8((canvas+0.5)*255))
 
-    draw = ImageDraw.Draw(canvas)
-    # font = ImageFont.truetype(<font-file>, <font-size>)
-    font = ImageFont.truetype("./flaskr/static/DroidSansMono.ttf", 16)
-    # draw.text((x, y),"Sample Text",(r,g,b))
-    draw.text((0, 0),"Progress: {0}%".format(prg),(0,255,0),font=font)
+    #draw = ImageDraw.Draw(canvas)
+    #font = ImageFont.truetype("./flaskr/static/DroidSansMono.ttf", 16)
+    #draw.text((0, 0),"Progress: {0}%".format(prg),(0,255,0),font=font)
 
     return np.array(canvas)
 

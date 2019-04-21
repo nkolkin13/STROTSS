@@ -10,11 +10,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 from imageio import imread, imwrite
 
-import flaskr.strotss.utils
-from flaskr.strotss.utils import *
-from flaskr.strotss.vgg_pt import *
-from flaskr.strotss.pyr_lap import *
-from flaskr.strotss.stylize_objectives import objective_class
+import utils
+from utils import *
+from vgg_pt import *
+from pyr_lap import *
+from stylize_objectives import objective_class
 
 def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_side, mask, content_weight=0., use_guidance=False, regions=0, coords=0, lr=2e-3):
 
@@ -25,8 +25,8 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
     save_ind = 0
 
     use_pyr=True
-    if scl > 3:
-        use_pyr = False
+    #if scl > 3:
+    #    use_pyr = False
 
     temp_name = './'+output_path.split('/')[-1].split('.')[0]+'_temp.png'
 
@@ -36,7 +36,7 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
     shutil.move(temp_name, output_path)
 
     #### Define feature extractor ###
-    cnn = flaskr.strotss.utils.to_device(Vgg16_pt())
+    cnn = utils.to_device(Vgg16_pt())
 
     phi = lambda x: cnn.forward(x)
     phi2 = lambda x, y, z: cnn.forward_cat(x,z,samps=y,forward_func=cnn.forward)
@@ -84,7 +84,18 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
 
     for ri in range(len(regions[0])):
         
-        r_temp = regions[1][ri]
+        '''
+        r=imresize(regions[0][ri],(stylized_im.size(3),stylized_im.size(2)),interp='bilinear')
+
+        if r.max()<0.1:
+            r = np.greater(r+1.,0.5)
+        else:
+            r = np.greater(r,0.5)
+
+        objective_wrapper.init_inds(z_c, z_s_all,r,ri)
+        '''
+
+        r_temp = regions[0][ri]
         r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()
         r = F.upsample(r_temp,(stylized_im.size(3),stylized_im.size(2)),mode='bilinear')[0,0,:,:].numpy()        
 
@@ -113,7 +124,7 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
         if i==0 or i%(RESAMPLE_FREQ*10) == 0:
             for ri in range(len(regions[0])):
                 
-                r_temp = regions[1][ri]
+                r_temp = regions[0][ri]
                 r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()
                 r = F.upsample(r_temp,(stylized_im.size(3),stylized_im.size(2)),mode='bilinear')[0,0,:,:].numpy()        
 

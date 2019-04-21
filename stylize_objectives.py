@@ -4,8 +4,8 @@ import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-from flaskr.strotss.contextual_loss import *
-import flaskr.strotss.utils
+from contextual_loss import *
+import utils
 
 
 class objective_class():
@@ -146,6 +146,7 @@ class objective_class():
             try:
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
             except:
+                #pass
                 region_mask = region_mask[:,:]
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
 
@@ -193,10 +194,10 @@ class objective_class():
             xym = np.floor(xy).astype(np.float32)
             xyr = xy - xym
 
-            w00 = flaskr.strotss.utils.to_device(torch.from_numpy((1.-xxr)*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w01 = flaskr.strotss.utils.to_device(torch.from_numpy((1.-xxr)*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w10 = flaskr.strotss.utils.to_device(torch.from_numpy(xxr*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
-            w11 = flaskr.strotss.utils.to_device(torch.from_numpy(xxr*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w00 = utils.to_device(torch.from_numpy((1.-xxr)*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w01 = utils.to_device(torch.from_numpy((1.-xxr)*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w10 = utils.to_device(torch.from_numpy(xxr*(1.-xyr))).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
+            w11 = utils.to_device(torch.from_numpy(xxr*xyr)).float().unsqueeze(0).unsqueeze(1).unsqueeze(3)
 
 
             xxm = np.clip(xxm.astype(np.int32),0,temp.size(2)-1)

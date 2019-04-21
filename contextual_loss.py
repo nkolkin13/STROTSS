@@ -3,7 +3,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import time
-import flaskr.strotss.utils
+import utils
 
 def pairwise_distances_sq_l2(x, y):
 
@@ -34,7 +34,7 @@ def pairwise_distances_cos(x, y):
 def get_DMat(X,Y,h=1.0,cb=0,splits=[128*3+256*3+512*4], cos_d=True):
     n = X.size(0)
     m = Y.size(0)
-    M = flaskr.strotss.utils.to_device(Variable(torch.zeros(n,m)))
+    M = utils.to_device(Variable(torch.zeros(n,m)))
 
 
     if 1:
@@ -93,8 +93,8 @@ def remd_loss(X,Y, h=None, cos_d=True, splits= [3+64+64+128+128+256+256+256+512+
 
 
     if d == 3:
-        X = flaskr.strotss.utils.rgb_to_yuv_pc(X.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
-        Y = flaskr.strotss.utils.rgb_to_yuv_pc(Y.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        X = utils.rgb_to_yuv_pc(X.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        Y = utils.rgb_to_yuv_pc(Y.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
 
     else:
         X = X.transpose(0,1).contiguous().view(d,-1).transpose(0,1)
@@ -135,10 +135,10 @@ def remd_loss_g(X,Y, GX, GY, h=1.0, splits= [3+64+64+128+128+256+256+256+512+512
     d = X.size(1)
 
     if d == 3:
-        X = flaskr.strotss.utils.rgb_to_yuv_pc(X.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
-        Y = flaskr.strotss.utils.rgb_to_yuv_pc(Y.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
-        GX = flaskr.strotss.utils.rgb_to_yuv_pc(GX.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
-        GY = flaskr.strotss.utils.rgb_to_yuv_pc(GY.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        X = utils.rgb_to_yuv_pc(X.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        Y = utils.rgb_to_yuv_pc(Y.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        GX = utils.rgb_to_yuv_pc(GX.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
+        GY = utils.rgb_to_yuv_pc(GY.transpose(0,1).contiguous().view(d,-1)).transpose(0,1)
 
 
     else:
