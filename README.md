@@ -28,6 +28,5 @@ python3 styleTransfer.py {PATH_TO_CONTENT} {PATH_TO_STYLE} {CONTENT_WEIGHT} -gr 
 
 guidance should take the form of two images such as these:
 
-![Content_guidance](/content_guidance.jpg?raw=true "Content Guidance")
+<img height="400" src='https://github.com/nkolkin13/STROTSS/blob/master/style_guidance.jpg?raw=true'>
 
-![Style_guidance](/style_guidance.jpg?raw=true "Style Guidance")
