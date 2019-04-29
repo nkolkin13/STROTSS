@@ -26,8 +26,12 @@ The output will appear in the same folder as 'styleTransfer.py' and be named 'ou
 python3 styleTransfer.py {PATH_TO_CONTENT} {PATH_TO_STYLE} {CONTENT_WEIGHT} -gr {PATH_TO_CONTENT_GUIDANCE} {PATH_TO_STYLE_GUIDANCE}
 ```
 
-guidance should take the form of two images such as these:
+guidance should take the form of two masks such as these:
 
-<img height="400" float="left" src='https://github.com/nkolkin13/STROTSS/blob/master/content_guidance.jpg?raw=true'>
-<img height="400" float=:"left" src='https://github.com/nkolkin13/STROTSS/blob/master/style_guidance.jpg?raw=true'>
 
+Content Mask           |  Style Mask
+:-------------------------:|:-------------------------:
+<img height="200" float="left" src='https://github.com/nkolkin13/STROTSS/blob/master/content_guidance.jpg?raw=true'> |  <img height="200" float=:"left" src='https://github.com/nkolkin13/STROTSS/blob/master/style_guidance.jpg?raw=true'>
+
+
+where regions that you wish to map onto each other have the same color.
