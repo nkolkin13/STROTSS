@@ -10,10 +10,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from imageio import imread
-from PIL import Image
-from PIL import ImageFont
-from PIL import ImageDraw 
-
 use_gpu = True
 
 
@@ -28,9 +24,6 @@ def match_device(ref, mut):
 
 #Define YUV color transform
 C = torch.from_numpy(np.float32([[0.577350,0.577350,0.577350],[-0.577350,0.788675,-0.211325],[-0.577350,-0.211325,0.788675]]))
-
-#wip_img = torch.from_numpy(imread('./flaskr/static/output_ims/wip.png').astype(np.float32)).permute(2,0,1).unsqueeze(0)
-#wip_img = F.upsample(wip_img,(100,100),mode='bilinear')
 
 def aug_canvas(canvas, scale, s_iter):
 
@@ -55,13 +48,7 @@ def aug_canvas(canvas, scale, s_iter):
 
     canvas = torch.clamp(canvas[0],-0.5,0.5).data.numpy().transpose(1,2,0)
 
-    canvas = Image.fromarray(np.uint8((canvas+0.5)*255))
-
-    #draw = ImageDraw.Draw(canvas)
-    #font = ImageFont.truetype("./flaskr/static/DroidSansMono.ttf", 16)
-    #draw.text((0, 0),"Progress: {0}%".format(prg),(0,255,0),font=font)
-
-    return np.array(canvas)
+    return np.uint8((canvas+0.5)*255)
 
 def rgb_to_yuv(rgb):
 
@@ -146,9 +133,7 @@ def split_99(x,y):
     return xo,yo
 
 def build_guidance(content_path,style_path,coords,augment=True):
-    #coords = np.load('coords_a04_obama01.npy')
-    #coords = np.load('greg_guide01.npy')
-
+    
     im_a = imread(content_path)
     im_b = imread(style_path)
 
@@ -158,8 +143,6 @@ def build_guidance(content_path,style_path,coords,augment=True):
     coords_true[:,2] = coords[:,3]
     coords_true[:,3] = coords[:,2]
     coords = coords_true
-
-    #coords = coords.astype(np.int64)
 
     if 1:
         new_coords = []
@@ -188,13 +171,9 @@ def build_guidance(content_path,style_path,coords,augment=True):
                     nc[0,2] = np.clip(nc[0,2],0,im_b.shape[0] )
                     nc[0,3] = np.clip(nc[0,3],0,im_b.shape[1])
 
-                    #print(nc)
-
                     new_coords.append(nc)
 
         coords = np.concatenate(new_coords,0)
-
-        #print(coords)
 
     coords[:,0] = coords[:,0]/im_a.shape[0] 
     coords[:,1] = coords[:,1]/im_a.shape[1] 
@@ -206,10 +185,6 @@ def build_guidance(content_path,style_path,coords,augment=True):
 def extract_regions(content_path,style_path):
     s_regions = imread(style_path).transpose(1,0,2)
     c_regions = imread(content_path).transpose(1,0,2)
-
-    #print(s_regions.shape)
-    #print(c_regions.shape)
-    #wreck()
 
     color_codes,c1 = np.unique(s_regions.reshape(-1, s_regions.shape[2]), axis=0,return_counts=True)
 
@@ -242,9 +217,6 @@ def load_path_for_pytorch(path, max_side=1000, force_scale=False, verbose=True):
     x = x/255.-0.5
     xt = x.copy()
     
-    #x[:,:,0] = xt[:,:,2]
-    #x[:,:,2] = xt[:,:,0]
-
     if len(s) < 3:
         x = np.stack([x,x,x],2)
 
@@ -276,14 +248,13 @@ def load_style_guidance(phi,path,coords_t,scale):
 
     style_im = to_device(Variable(load_path_for_pytorch(path, max_side=scale, verbose=False, force_scale=True).unsqueeze(0)))
 
-    #print(coords)
     coords = coords_t.copy()
     coords[:,0]=coords[:,0]*style_im.size(2)
     coords[:,1]=coords[:,1]*style_im.size(3)
     coords = coords.astype(np.int64)
 
-    xx = coords[:,0]#(coords[:,0]*style_im.size(2)).astype(np.int64)
-    xy = coords[:,1]#(coords[:,1]*style_im.size(3)).astype(np.int64)
+    xx = coords[:,0]
+    xy = coords[:,1]
 
     zt = phi(style_im)
     
@@ -294,8 +265,8 @@ def load_style_guidance(phi,path,coords_t,scale):
         temp = zt[i]
 
         if i>0 and zt[i-1].size(2) > zt[i].size(2):
-            xx = xx/2.0#+0.5
-            xy = xy/2.0#+0.5
+            xx = xx/2.0
+            xy = xy/2.0
 
         xxm = np.floor(xx).astype(np.float32)
         xxr = xx - xxm
@@ -322,7 +293,6 @@ def load_style_guidance(phi,path,coords_t,scale):
         temp = temp[:,:,s00,:].mul_(w00).add_(temp[:,:,s01,:].mul_(w01)).add_(temp[:,:,s10,:].mul_(w10)).add_(temp[:,:,s11,:].mul_(w11))
         
         l2.append(temp)
-    #wreck()
     gz = torch.cat([li.contiguous() for li in l2],1)
 
     return gz
@@ -332,8 +302,7 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
 
     if n_samps > 0:
         list.sort(paths)
-        #print(paths)
-        paths = paths[::max((len(paths)//n_samps),1)]#np.random.choice(paths,n_samps,replace=False)
+        paths = paths[::max((len(paths)//n_samps),1)]
     else:
         print(len(paths))
         
@@ -343,7 +312,6 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
     nloaded = 0
     for p in paths:
 
-        #print(nloaded)
         nloaded += 1
         
         style_im = to_device(Variable(load_path_for_pytorch(p, max_side=scale, verbose=False, force_scale=True).unsqueeze(0), requires_grad=False))
@@ -357,13 +325,8 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
 
         for j in range(inner):
 
-            #if len(paths) == 1:
-            #    if np.random.rand()<0.5:
-            #        style_im = Variable(torch.from_numpy(np.flip(style_im.data.cpu().numpy(),3).copy()).cuda())
             style_im = sts[np.random.randint(0,len(sts))]
-            #style_im = style_im-F.upsample(F.upsample(style_im,(style_im.size(2)//2,style_im.size(3)//2),mode='bilinear'),(style_im.size(2),style_im.size(3)),mode='bilinear')
-            #print(style_im)
-
+            
             with torch.no_grad():
                 zt = phi(style_im,subsamps,r)
                 

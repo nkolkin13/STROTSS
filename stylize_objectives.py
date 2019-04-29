@@ -28,9 +28,8 @@ class objective_class():
 
 
         ## Extract Random Subset of Features from Stylized Image & Content Image ##
-        #    (Choose Features from Same locations in Stylized Image & Content Image) #
+        # (Choose Features from Same locations in Stylized Image & Content Image) #
         final_loss = 0.
-        #print('============')
         for ri in range(len(self.rand_ixx.keys())):
             xx, xy, yx = self.get_feature_inds(ri=ri)
             x_st, c_st = self.spatial_feature_extract(z_x, z_c, xx, xy)
@@ -48,54 +47,31 @@ class objective_class():
 
             fm = 3+2*64+128*2+256*3+512*2
 
-            if 1:
-                ell_content = content_loss_func(x_st[:,:,:,:], c_st[:,:,:,:])
+            ell_content = content_loss_func(x_st[:,:,:,:], c_st[:,:,:,:])
+
+
+            ## Compute Style Loss ##
+            remd_loss, used_style_feats = style_loss_func(x_st[:,:fm,:,:], z_st[:,:fm,:,:], self.z_dist, splits=[fm])
+
+            if gz.sum() > 0.:
+                for j in range(gz.size(2)):
+                    remd_loss += style_loss_func(gx_st[:,:-2,j:(j+1),:], gz[:,:,j:(j+1),:],self.z_dist[:1]*0.)[0]/gz.size(2)
+
+            ### Compute Moment Loss (constrains magnitude of features ###
+            moment_ell = 0.
+            if gz.sum() > 0.:
+                moment_ell = moment_loss(torch.cat([x_st,gx_st],2)[:,:-2,:,:],torch.cat([z_st,gz],2),moments=[1,2])
             else:
-                ell_content = 0.5*torch.mean(torch.pow(x_st[:,:,:,:]-c_st[:,:,:,:],2))
+                moment_ell = moment_loss(x_st[:,:-2,:,:],z_st,moments=[1,2])
 
-            if 1:
-
-                ## Compute Style Loss ##
-                if 1:
-                    if 1:
-                        remd_loss, used_style_feats = style_loss_func(x_st[:,:fm,:,:], z_st[:,:fm,:,:], self.z_dist, splits=[fm])
-                    else:
-                        f1 = x_st[0,:fm,:,0]
-                        f2 = z_st[0,:fm,:,0]
-                        A = torch.mm(f1,f1.transpose(0,1))
-                        G = torch.mm(f2,f2.transpose(0,1))
-                        #wreck()
-                        remd_loss = torch.sum(torch.pow(A-G,2))/(4*(f1.size(1)**2)*(f2.size(1)**2))
-                        #style_weight = 1.
-
-                else:
-                    remd_loss = 0
-
-                if gz.sum() > 0.:
-                    for j in range(gz.size(2)):
-                        remd_loss += style_loss_func(gx_st[:,:-2,j:(j+1),:], gz[:,:,j:(j+1),:],self.z_dist[:1]*0.)[0]/gz.size(2)
-
-                ### Compute Moment Loss (constrains magnitude of features ###
-                moment_ell = 0.
-                if 1:
-                    if gz.sum() > 0.:
-                        moment_ell = moment_loss(torch.cat([x_st,gx_st],2)[:,:-2,:,:],torch.cat([z_st,gz],2),moments=[1,2])
-                    else:
-                        moment_ell = moment_loss(x_st[:,:-2,:,:],z_st,moments=[1,2])
-                        
-                #moment_ell = 0.
-                content_weight_frac = 1./max(content_weight,1.)
-                if 1:
-                    moment_ell += content_weight_frac*style_loss_func(x_st[:,:3,:,:], z_st[:,:3,:,:],self.z_dist,splits=[3])[0]
+            ### Add Pallette Matching Loss ###                                        
+            content_weight_frac = 1./max(content_weight,1.)
+            moment_ell += content_weight_frac*style_loss_func(x_st[:,:3,:,:], z_st[:,:3,:,:],self.z_dist,splits=[3])[0]
 
 
-
-                ell_style = remd_loss+moment_weight*moment_ell
-                style_weight = 1.0 + moment_weight
-
-
-            #remd_loss = 0
-            ## Combine for Full Objective ##
+            ### Combine Terms and Normalize ###
+            ell_style = remd_loss+moment_weight*moment_ell
+            style_weight = 1.0 + moment_weight
             final_loss += (content_weight*ell_content+ell_style)/(content_weight+style_weight)
         
         return final_loss/len(self.rand_ixx.keys())
@@ -116,8 +92,6 @@ class objective_class():
             self.rand_ixy[ri]= []
             self.rand_iy[ri]= []
 
-        #print(z_s[0].size())
-        #print(len(z_s))
         for i in range(len(z_s)):
 
             d = z_s[i].size(1)
@@ -126,8 +100,6 @@ class objective_class():
 
 
             big_size = x_st.size(3)*x_st.size(2)
-
-
 
             stride_x = int(max(math.floor(math.sqrt(big_size//const)),1))
             offset_x = np.random.randint(stride_x)
@@ -146,23 +118,15 @@ class objective_class():
             try:
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
             except:
-                #pass
                 region_mask = region_mask[:,:]
                 xc = xc[region_mask[xy[:,0],xx[:,0]],:]
-
-            #np.random.shuffle(xc)
 
             self.rand_ixx[ri].append(xc[:,0])
             self.rand_ixy[ri].append(xc[:,1])
 
             zx = np.array(range(z_st.size(2))).astype(np.int32)
-            #np.random.shuffle(zx)
-            #print(z_st.size())
 
             self.rand_iy[ri].append(zx)
-
-            #print('done')
-            #wreck()
 
     def init_g_inds(self, coords, x_im):
 
@@ -181,12 +145,8 @@ class objective_class():
             temp2 = z_c[i]
 
             if i>0 and z_x[i-1].size(2) > z_x[i].size(2):
-                xx = xx/2.0#+0.5
-                xy = xy/2.0#+0.5
-
-            #xxt = np.clip(xx.astype(np.int32),0,temp.size(2)-1)
-            #xyt = np.clip(xy.astype(np.int32),0,temp.size(3)-1)
-
+                xx = xx/2.0
+                xy = xy/2.0
 
             xxm = np.floor(xx).astype(np.float32)
             xxr = xx - xxm
@@ -215,7 +175,6 @@ class objective_class():
 
             temp2 = temp2.view(1,temp2.size(1),temp2.size(2)*temp2.size(3),1)
             temp2 = temp2[:,:,s00,:].mul_(w00).add_(temp2[:,:,s01,:].mul_(w01)).add_(temp2[:,:,s10,:].mul_(w10)).add_(temp2[:,:,s11,:].mul_(w11))
-            #wreck()
 
             l2.append(temp)
             l3.append(temp2)

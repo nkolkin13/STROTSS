@@ -25,8 +25,6 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
     save_ind = 0
 
     use_pyr=True
-    #if scl > 3:
-    #    use_pyr = False
 
     temp_name = './'+output_path.split('/')[-1].split('.')[0]+'_temp.png'
 
@@ -84,16 +82,6 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
 
     for ri in range(len(regions[0])):
         
-        '''
-        r=imresize(regions[0][ri],(stylized_im.size(3),stylized_im.size(2)),interp='bilinear')
-
-        if r.max()<0.1:
-            r = np.greater(r+1.,0.5)
-        else:
-            r = np.greater(r,0.5)
-
-        objective_wrapper.init_inds(z_c, z_s_all,r,ri)
-        '''
 
         r_temp = regions[0][ri]
         r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()

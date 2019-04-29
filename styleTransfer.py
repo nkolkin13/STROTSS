@@ -46,7 +46,6 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
                 stylized_im = Variable(content_im_mean+lap)
             else:
                 stylized_im = Variable(content_im.data)
-            #stylized_im = Variable(content_im_mean+nz)
 
         ### Otherwise bilinearly upsample previous scales output and add back bottom level of Laplaccian pyramid for current scale of content image ###
         if scl > 1 and scl < max_scl-1:
@@ -76,8 +75,8 @@ if __name__=='__main__':
     ### Parse Command Line Arguments ###
     content_path = sys.argv[1]
     style_path = sys.argv[2]
-    content_weight = float(sys.argv[3])
-    max_scl = int(sys.argv[4])
+    content_weight = float(sys.argv[3])*16.0
+    max_scl = 5
 
     use_guidance_region = '-gr' in sys.argv
     use_guidance_points = False
