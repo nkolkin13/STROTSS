@@ -28,6 +28,6 @@ python3 styleTransfer.py {PATH_TO_CONTENT} {PATH_TO_STYLE} {CONTENT_WEIGHT} -gr 
 
 guidance should take the form of two images such as these:
 
-![Content_guidance](/content_guidance.jpg.jpg?raw=true "Content Guidance")
+![Content_guidance](/content_guidance.jpg?raw=true "Content Guidance")
 
-![Style_guidance](/style_guidance.jpg.jpg?raw=true "Style Guidance")
+![Style_guidance](/style_guidance.jpg?raw=true "Style Guidance")
