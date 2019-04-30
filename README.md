@@ -1,5 +1,5 @@
 # Style Transfer by Relaxed Optimal Transport and Self-Similarity (STROTSS)
-Code for the paper [arxiv link], to appear CVPR 2019
+Code for the paper https://arxiv.org/abs/1904.12785, to appear CVPR 2019
 
 Webdemo available at: http://128.135.245.233:8080/ 
 
