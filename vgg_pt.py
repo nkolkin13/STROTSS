@@ -9,6 +9,8 @@ from torchvision import models
 import numpy as np
 
 ssl._create_default_https_context = ssl._create_unverified_context
+use_random = True
+
 
 class Vgg16_pt(torch.nn.Module):
     def __init__(self, requires_grad=False):
@@ -86,9 +88,14 @@ class Vgg16_pt(torch.nn.Module):
         
         xc = xc[region_mask,:]
 
-        np.random.shuffle(xc)
-
         const2 = min(samps,xc.shape[0])
+
+
+        global use_random
+        if use_random:
+            np.random.shuffle(xc)
+        else:
+            xc = xc[::(xc.shape[0]//const2),:]
 
         xx = xc[:const2,0]
         yy = xc[:const2,1]

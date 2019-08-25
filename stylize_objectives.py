@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from contextual_loss import *
 import utils
 
+use_random=True
 
 class objective_class():
 
@@ -101,12 +102,20 @@ class objective_class():
 
             big_size = x_st.size(3)*x_st.size(2)
 
-            stride_x = int(max(math.floor(math.sqrt(big_size//const)),1))
-            offset_x = np.random.randint(stride_x)
-            
-            stride_y = int(max(math.ceil(math.sqrt(big_size//const)),1))
-            offset_y = np.random.randint(stride_y)
-            
+            global use_random
+            if use_random:
+                stride_x = int(max(math.floor(math.sqrt(big_size//const)),1))
+                offset_x = np.random.randint(stride_x)
+                
+                stride_y = int(max(math.ceil(math.sqrt(big_size//const)),1))
+                offset_y = np.random.randint(stride_y)
+            else:
+                stride_x = int(max(math.floor(math.sqrt(big_size//const)),1))
+                offset_x = stride_x//2
+                
+                stride_y = int(max(math.ceil(math.sqrt(big_size//const)),1))
+                offset_y = stride_y//2
+
             region_mask = r#.flatten()
 
             xx,xy = np.meshgrid(np.array(range(x_st.size(2)))[offset_x::stride_x], np.array(range(x_st.size(3)))[offset_y::stride_y] )
@@ -196,18 +205,27 @@ class objective_class():
 
 
     def shuffle_feature_inds(self, i=0):
+        global use_random
 
-        for ri in self.rand_ixx.keys():
-            np.random.shuffle(self.rand_ixx[ri][i])
-            np.random.shuffle(self.rand_ixy[ri][i])
-            np.random.shuffle(self.rand_iy[ri][i])
+        if use_random:
+            for ri in self.rand_ixx.keys():
+                np.random.shuffle(self.rand_ixx[ri][i])
+                np.random.shuffle(self.rand_ixy[ri][i])
+                np.random.shuffle(self.rand_iy[ri][i])
 
 
     def get_feature_inds(self,ri=0, i=0, cnt=32**2):
 
-        xx = self.rand_ixx[ri][i][:cnt]
-        xy = self.rand_ixy[ri][i][:cnt]
-        yx = self.rand_iy[ri][i][:cnt]
+        global use_random
+
+        if use_random:
+            xx = self.rand_ixx[ri][i][:cnt]
+            xy = self.rand_ixy[ri][i][:cnt]
+            yx = self.rand_iy[ri][i][:cnt]
+        else:
+            xx = self.rand_ixx[ri][i][::(self.rand_ixx[ri][i].shape[0]//cnt)]
+            xy = self.rand_ixy[ri][i][::(self.rand_ixy[ri][i].shape[0]//cnt)]
+            yx =  self.rand_iy[ri][i][::(self.rand_iy[ri][i].shape[0]//cnt)]
 
         return xx, xy, yx
     

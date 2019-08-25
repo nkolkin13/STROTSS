@@ -34,7 +34,6 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
         lap = content_im.clone()-F.upsample(F.upsample(content_im,(content_im.size(2)//2,content_im.size(3)//2),mode='bilinear'),(content_im.size(2),content_im.size(3)),mode='bilinear')
         nz = torch.normal(lap*0.,0.1)
 
-
         canvas = F.upsample(torch.clamp(lap,-0.5,0.5),(content_im_big.size(2),content_im_big.size(3)),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
 
         if scl == 1:

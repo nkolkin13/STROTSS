@@ -299,12 +299,11 @@ def load_style_guidance(phi,path,coords_t,scale):
 
 def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, inner=1, cpu_mode=False):
 
-
     if n_samps > 0:
         list.sort(paths)
         paths = paths[::max((len(paths)//n_samps),1)]
     else:
-        print(len(paths))
+        pass#print(len(paths))
         
     total_sum = 0.
     z = []
@@ -317,7 +316,11 @@ def load_style_folder(phi, paths, regions, ri, n_samps=-1,subsamps=-1,scale=-1, 
         style_im = to_device(Variable(load_path_for_pytorch(p, max_side=scale, verbose=False, force_scale=True).unsqueeze(0), requires_grad=False))
         
         r_temp = regions[1][ri]
+        if len(r_temp.shape) > 2:
+            r_temp = r_temp[:,:,0]
+
         r_temp = torch.from_numpy(r_temp).unsqueeze(0).unsqueeze(0).contiguous()
+        #print(r_temp.size())
         r = F.upsample(r_temp,(style_im.size(3),style_im.size(2)),mode='bilinear')[0,0,:,:].numpy()        
         sts = [style_im]
 
