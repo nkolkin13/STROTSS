@@ -1,7 +1,7 @@
 # Style Transfer by Relaxed Optimal Transport and Self-Similarity (STROTSS)
 Code for the paper https://arxiv.org/abs/1904.12785, to appear CVPR 2019
 
-Webdemo available at: https://style.ttic.edu 
+Webdemo available at: http://style.ttic.edu 
 
 ## Dependencies:
 * python3 >= 3.5
