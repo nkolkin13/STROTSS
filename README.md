@@ -22,7 +22,7 @@ The resolution of the output can be set on line 80 of styleTransfer.py; the curr
 
 The output will appear in the same folder as 'styleTransfer.py' and be named 'output.png'
 
-### Spatially Guidaed Style Transfer:
+### Spatially Guided Style Transfer:
 
 ```
 python3 styleTransfer.py {PATH_TO_CONTENT} {PATH_TO_STYLE} {CONTENT_WEIGHT} -gr {PATH_TO_CONTENT_GUIDANCE} {PATH_TO_STYLE_GUIDANCE}
