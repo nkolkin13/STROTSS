@@ -10,11 +10,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 from imageio import imread, imwrite
 
-import utils
-from utils import *
-from vgg_pt import *
-from pyr_lap import *
-from stylize_objectives import objective_class
+from . import utils
+from .utils import *
+from .vgg_pt import *
+from .pyr_lap import *
+from .stylize_objectives import objective_class
 
 def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_side, mask, content_weight=0., use_guidance=False, regions=0, coords=0, lr=2e-3):
 

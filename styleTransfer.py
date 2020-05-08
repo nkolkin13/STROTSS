@@ -9,9 +9,9 @@ import torch.optim as optim
 import numpy as np
 from imageio import imread, imwrite
 
-from   st_helper import *
-import utils
-from   utils import *
+from  .st_helper import *
+from . import utils
+from  .utils import *
 
 def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidance,regions, output_path='./output.png'):
 
