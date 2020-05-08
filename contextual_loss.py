@@ -88,7 +88,7 @@ def remd_loss(X,Y, h=None, cos_d=True, splits= [3+64+64+128+128+256+256+256+512+
         Y = Y.transpose(0,1).contiguous().view(d,-1).transpose(0,1)
 
     #Relaxed EMD
-    CX_M = get_DMat(X,Y,1.,cos_d=True, splits=splits)
+    CX_M = get_DMat(X,Y,1.,cos_d=cos_d, splits=splits)
     
     if return_mat:
         return CX_M
@@ -98,6 +98,7 @@ def remd_loss(X,Y, h=None, cos_d=True, splits= [3+64+64+128+128+256+256+256+512+
 
     m1,m1_inds = CX_M.min(1)
     m2,m2_inds = CX_M.min(0)
+
     if m1.mean() > m2.mean():
         used_style_feats = Y[m1_inds,:]
     else:
@@ -106,7 +107,6 @@ def remd_loss(X,Y, h=None, cos_d=True, splits= [3+64+64+128+128+256+256+256+512+
     remd = torch.max(m1.mean(),m2.mean())
 
     return remd, used_style_feats
-
 
 
 def remd_loss_g(X,Y, GX, GY, h=1.0, splits= [3+64+64+128+128+256+256+256+512+512]):
@@ -264,6 +264,34 @@ def dp_loss(X,Y):
     Mx = Mx/Mx.sum(0,keepdim=True)
 
     My = get_DMat(Y,Y,1.,cos_d=True,splits=[X.size(1)])
+    My = My/My.sum(0,keepdim=True)
+
+    d = torch.abs(dM*(Mx-My)).mean()*X.size(0)
+
+    return d
+
+
+def dp_loss_warp(X,Y):
+
+    d = X.size(1)
+
+    X = X.transpose(0,1).contiguous().view(d,-1).transpose(0,1)
+    Y = Y.transpose(0,1).contiguous().view(d,-1).transpose(0,1)
+
+    Xc = X[:,-2:]
+    Y = Y[:,:-2]
+    X = X[:,:-2]
+
+    if 0:
+        dM = torch.exp(-2.*get_DMat(Xc,Xc,1., cos_d=False))
+        dM = dM/dM.sum(0,keepdim=True).detach()*dM.size(0)
+    else:
+        dM = 1.
+
+    Mx = get_DMat(X,X,1.,cos_d=False,splits=[X.size(1)])
+    Mx = Mx/Mx.sum(0,keepdim=True)
+
+    My = get_DMat(Y,Y,1.,cos_d=False,splits=[X.size(1)])
     My = My/My.sum(0,keepdim=True)
 
     d = torch.abs(dM*(Mx-My)).mean()*X.size(0)

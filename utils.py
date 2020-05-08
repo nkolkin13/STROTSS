@@ -46,9 +46,9 @@ def aug_canvas(canvas, scale, s_iter):
 
     canvas = F.upsample(canvas,(h,w),mode='bilinear').cpu()
 
-    canvas = torch.clamp(canvas[0],-0.5,0.5).data.numpy().transpose(1,2,0)
+    canvas = torch.clamp(canvas[0],0.,1.).data.numpy().transpose(1,2,0)
 
-    return np.uint8((canvas+0.5)*255)
+    return np.uint8(canvas*255)
 
 def rgb_to_yuv(rgb):
 
@@ -214,7 +214,7 @@ def load_path_for_pytorch(path, max_side=1000, force_scale=False, verbose=True):
     x = imread(path)
     s = x.shape
 
-    x = x/255.-0.5
+    x = x/255.#-0.5
     xt = x.copy()
     
     if len(s) < 3:
@@ -234,10 +234,10 @@ def load_path_for_pytorch(path, max_side=1000, force_scale=False, verbose=True):
         x = F.upsample(x.unsqueeze(0),( int(s[0]*fac), int(s[1]*fac) ), mode='bilinear')[0]
         so = s
         s = x.shape
-        if verbose:
-            print(so)
-            print(s)
-            print('-----')
+        #if verbose:
+        #    print(so)
+        #    print(s)
+        #    print('-----')
 
 
     return x

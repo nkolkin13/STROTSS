@@ -34,12 +34,19 @@ class Vgg16_pt(torch.nn.Module):
                 param.requires_grad = False
 
         self.inds = range(11)
-
+        
+        mean = torch.Tensor([0.485, 0.456, 0.406]).view(1,3,1,1)
+        std = torch.Tensor([0.229, 0.224, 0.225]).view(1,3,1,1)
+        
+        self.register_buffer('mu', mean)
+        self.register_buffer('sig', std)
 
     def forward_base(self,X,rand):
         inds = self.inds
 
-        x = X
+        x = (X-self.mu)/self.sig
+
+
         l2 = [X]
         for i in range(30):
             try:

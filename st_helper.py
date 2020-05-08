@@ -144,7 +144,7 @@ def style_transfer(stylized_im, content_im, style_path, output_path, scl, long_s
 
         ### Periodically Report Loss and Save Current Image ###
         if (i+1)%REPORT_INTERVAL == 0:
-            print((i+1),ell)
+            print('\t',(i+1),ell)
             save_ind += 1
 
 

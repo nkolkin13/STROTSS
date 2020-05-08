@@ -34,7 +34,7 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
         lap = content_im.clone()-F.upsample(F.upsample(content_im,(content_im.size(2)//2,content_im.size(3)//2),mode='bilinear'),(content_im.size(2),content_im.size(3)),mode='bilinear')
         nz = torch.normal(lap*0.,0.1)
 
-        canvas = F.upsample(torch.clamp(lap,-0.5,0.5),(content_im_big.size(2),content_im_big.size(3)),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
+        canvas = F.upsample( lap, (content_im_big.size(2),content_im_big.size(3)), mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
 
         if scl == 1:
             canvas = F.upsample(content_im,(content_im.size(2)//2,content_im.size(3)//2),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
@@ -50,14 +50,14 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
         if scl > 1 and scl < max_scl-1:
             stylized_im = F.upsample(stylized_im.clone(),(content_im.size(2),content_im.size(3)),mode='bilinear')+lap
 
-        if scl > 3:
+        if scl == max_scl-1:
             stylized_im = F.upsample(stylized_im.clone(),(content_im.size(2),content_im.size(3)),mode='bilinear')
             lr = 1e-3
 
         ### Style Transfer at this scale ###
         stylized_im, final_loss = style_transfer(stylized_im, content_im, style_path, output_path, scl, long_side, 0., use_guidance=use_guidance, coords=coords, content_weight=content_weight, lr=lr, regions=regions)
 
-        canvas = F.upsample(torch.clamp(stylized_im,-0.5,0.5),(content_im.size(2),content_im.size(3)),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
+        canvas = F.upsample(stylized_im,(content_im.size(2),content_im.size(3)),mode='bilinear')[0].data.cpu().numpy().transpose(1,2,0)
         
         ### Decrease Content Weight for next scale ###
         content_weight = content_weight/2.0
@@ -65,9 +65,9 @@ def run_st(content_path, style_path, content_weight, max_scl, coords, use_guidan
     print("Finished in: ", int(time.time()-start), 'Seconds')
     print('Final Loss:', final_loss)
 
-    canvas = torch.clamp(stylized_im[0],-0.5,0.5).data.cpu().numpy().transpose(1,2,0)
+    canvas = torch.clamp(stylized_im[0],0.,1.).data.cpu().numpy().transpose(1,2,0)
     imwrite(output_path,canvas)
-    return final_loss , stylized_im
+    return final_loss , canvas
 
 if __name__=='__main__':
 
@@ -75,7 +75,7 @@ if __name__=='__main__':
     content_path = sys.argv[1]
     style_path = sys.argv[2]
     content_weight = float(sys.argv[3])*16.0
-    max_scl = 5
+    max_scl = int(sys.argv[4])
 
     use_guidance_region = '-gr' in sys.argv
     use_guidance_points = False
@@ -100,4 +100,4 @@ if __name__=='__main__':
             regions = [[imread(content_path)[:,:]*0.+1.], [imread(style_path)[:,:]*0.+1.]]
 
     ### Style Transfer and save output ###
-    loss,canvas = run_st(content_path,style_path,content_weight,max_scl,coords,use_guidance_points,regions)
+    loss,canvas = run_st(content_path,style_path,content_weight,max_scl,coords,use_guidance_points,regions,output_path=sys.argv[5])
