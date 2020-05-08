@@ -1,6 +1,8 @@
 # Style Transfer by Relaxed Optimal Transport and Self-Similarity (STROTSS)
 Code for the paper https://arxiv.org/abs/1904.12785 (CVPR 2019)
 
+webdemo: http://style.ttic.edu/ 
+
 UPDATE 5/8/2020: David Futschik (https://github.com/futscdav) very kindly pointed out a bug in the feature extraction pipeline where the images were not properly normalized with imagenet's mean and standard deviation for each color channel. Fixing this dramatically improves results in many cases. He also has implemented a much faster and more memory efficient version of strotts (https://github.com/futscdav/strotss), it doesn't allow for spatial guidance yet but I'm planning on incorporating his improvements into this repo soon so that the faster version is available for spatial guidance as well.
 
 ## Dependencies:
@@ -22,7 +24,7 @@ The resolution of the output can be set on line 80 of styleTransfer.py; the curr
 
 The output will appear in the same folder as 'styleTransfer.py' and be named 'output.png'
 
-### Spatially Guidaed Style Transfer:
+### Spatially Guided Style Transfer:
 
 ```
 python3 styleTransfer.py {PATH_TO_CONTENT} {PATH_TO_STYLE} {CONTENT_WEIGHT} -gr {PATH_TO_CONTENT_GUIDANCE} {PATH_TO_STYLE_GUIDANCE}
