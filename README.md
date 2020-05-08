@@ -1,6 +1,8 @@
 # Style Transfer by Relaxed Optimal Transport and Self-Similarity (STROTSS)
 Code for the paper https://arxiv.org/abs/1904.12785, to appear CVPR 2019
 
+UPDATE 5/8/2020: David Futschik (https://github.com/futscdav) very kindly pointed out a bug in the feature extraction pipeline where the images were not properly normalized with imagenet's mean and standard deviation for each color channel. Fixing this dramatically improves results in many cases. He also has implemented a much faster and more memory efficient version of strotts (https://github.com/futscdav/strotss), it doesn't allow for spatial guidance yet but I'm planning on incorporating his improvements into this repo soon so that the faster version is available for spatial guidance as well.
+
 ## Dependencies:
 * python3 >= 3.5
 * pytorch >= 1.0
